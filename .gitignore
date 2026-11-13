@@ -1,0 +1,21 @@
+﻿# Maven
+target/
+*.class
+
+# NetBeans
+nbproject/private/
+
+# Otros IDE
+.idea/
+.vscode/
+.settings/
+
+# Archivos locales
+*.log
+.env
+.env.*
+!.env.example
+
+# Sistema operativo
+.DS_Store
+Thumbs.db

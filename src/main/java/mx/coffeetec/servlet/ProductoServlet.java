@@ -169,14 +169,17 @@ public class ProductoServlet extends HttpServlet {
 
         } catch (JsonProcessingException e) {
 
-            enviarError(
-                    response,
-                    HttpServletResponse.SC_BAD_REQUEST,
-                    "El JSON enviado no es valido"
-            );
+    e.printStackTrace();
 
-            return;
-        }
+    enviarError(
+            response,
+            HttpServletResponse.SC_BAD_REQUEST,
+            "El JSON enviado mmmno es valido"
+            
+    );
+
+    return;
+}
 
         // Validar los campos obligatorios
         if (nuevoProducto == null

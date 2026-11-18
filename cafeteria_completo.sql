@@ -1,4 +1,3 @@
-
 -- ============================================================
 -- ENTIDADES FUERTES 
 -- ============================================================
@@ -6,7 +5,7 @@
 CREATE TABLE rol (
     id_rol          SMALLINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     nombre          VARCHAR(25) NOT NULL UNIQUE,
-    descripcion     VARCHAR(200),
+    descripcion     VARCHAR(40),
     activo          BOOLEAN NOT NULL DEFAULT TRUE,
     CONSTRAINT ck_rol_nombre
         CHECK (nombre IN ('administrador', 'gerente', 'empleado'))
@@ -14,9 +13,9 @@ CREATE TABLE rol (
 
 CREATE TABLE empleado (
     id_empleado     BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    nombre          VARCHAR(100) NOT NULL,
+    nombre          VARCHAR(40) NOT NULL,
     telefono        VARCHAR(15),
-    puesto          VARCHAR(80) NOT NULL DEFAULT 'Empleado',
+    puesto          VARCHAR(40) NOT NULL DEFAULT 'Empleado',
     fecha_ingreso   DATE NOT NULL DEFAULT CURRENT_DATE,
     activo          BOOLEAN NOT NULL DEFAULT TRUE
 );
@@ -27,8 +26,8 @@ CREATE TABLE usuario (
                        ON UPDATE CASCADE ON DELETE RESTRICT,
     id_rol             SMALLINT NOT NULL REFERENCES rol(id_rol)
                        ON UPDATE CASCADE ON DELETE RESTRICT,
-    nombre_usuario     VARCHAR(50) NOT NULL UNIQUE,
-    correo             VARCHAR(50) NOT NULL UNIQUE,
+    nombre_usuario     VARCHAR(40) NOT NULL UNIQUE,
+    correo             VARCHAR(40) NOT NULL UNIQUE,
     contrasena_hash    TEXT NOT NULL,
     activo             BOOLEAN NOT NULL DEFAULT TRUE,
     debe_cambiar_clave BOOLEAN NOT NULL DEFAULT TRUE,
@@ -42,9 +41,9 @@ CREATE TABLE usuario (
 
 CREATE TABLE cliente (
     id_cliente      BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    nombre          VARCHAR(100) NOT NULL,
+    nombre          VARCHAR(40) NOT NULL,
     telefono        VARCHAR(25),
-    correo          VARCHAR(254),
+    correo          VARCHAR(40),
     fecha_registro  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     activo          BOOLEAN NOT NULL DEFAULT TRUE,
     CONSTRAINT ck_cliente_correo
@@ -53,10 +52,10 @@ CREATE TABLE cliente (
 
 CREATE TABLE proveedor (
     id_proveedor    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    nombre          VARCHAR(100) NOT NULL,
-    direccion       VARCHAR(250),
+    nombre          VARCHAR(40) NOT NULL,
+    direccion       VARCHAR(90),
     telefono        VARCHAR(25),
-    correo          VARCHAR(254),
+    correo          VARCHAR(40),
     activo          BOOLEAN NOT NULL DEFAULT TRUE,
     CONSTRAINT ck_proveedor_correo
         CHECK (correo IS NULL OR POSITION('@' IN correo) > 1)
@@ -64,8 +63,8 @@ CREATE TABLE proveedor (
 
 CREATE TABLE categoria (
     id_categoria   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    nombre         VARCHAR(80) NOT NULL UNIQUE,
-    tipo           VARCHAR(60) NOT NULL DEFAULT 'General',
+    nombre         VARCHAR(40) NOT NULL UNIQUE,
+    tipo           VARCHAR(40) NOT NULL DEFAULT 'General',
     descripcion    TEXT,
     activo         BOOLEAN NOT NULL DEFAULT TRUE,
     fecha_creacion TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -75,7 +74,7 @@ CREATE TABLE producto (
     id_producto    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_categoria   BIGINT NOT NULL REFERENCES categoria(id_categoria)
                    ON UPDATE CASCADE ON DELETE RESTRICT,
-    nombre         VARCHAR(120) NOT NULL,
+    nombre         VARCHAR(40) NOT NULL,
     descripcion    TEXT,
     precio         NUMERIC(12,2) NOT NULL,
     url_imagen     TEXT,
@@ -91,7 +90,7 @@ CREATE TABLE insumo (
     id_insumo       BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_proveedor    BIGINT REFERENCES proveedor(id_proveedor)
                     ON UPDATE CASCADE ON DELETE SET NULL,
-    nombre          VARCHAR(120) NOT NULL UNIQUE,
+    nombre          VARCHAR(40) NOT NULL UNIQUE,
     unidad_medida   VARCHAR(30) NOT NULL,
     stock_actual    NUMERIC(14,3) NOT NULL DEFAULT 0,
     stock_minimo    NUMERIC(14,3) NOT NULL DEFAULT 0,
@@ -143,14 +142,14 @@ CREATE TABLE pago (
     fecha_hora    TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     monto_total   NUMERIC(14,2) NOT NULL DEFAULT 0,
     estado        VARCHAR(15) NOT NULL DEFAULT 'pendiente',
-    referencia    VARCHAR(120),
+    referencia    VARCHAR(40),
     CONSTRAINT ck_pago_monto CHECK (monto_total >= 0),
     CONSTRAINT ck_pago_estado CHECK (estado IN ('pendiente', 'completado', 'fallido', 'reembolsada'))
 );
 
 CREATE TABLE caja (
     id_caja          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    nombre           VARCHAR(80) NOT NULL UNIQUE,
+    nombre           VARCHAR(40) NOT NULL UNIQUE,
     estado           VARCHAR(12) NOT NULL DEFAULT 'cerrada',
     fecha_apertura   TIMESTAMPTZ,
     fecha_cierre     TIMESTAMPTZ,
@@ -191,7 +190,7 @@ CREATE TABLE movimiento_inventario (
                      ON UPDATE CASCADE ON DELETE SET NULL,
     tipo             VARCHAR(10) NOT NULL,
     cantidad         NUMERIC(14,3) NOT NULL,
-    motivo           VARCHAR(250) NOT NULL,
+    motivo           VARCHAR(40) NOT NULL,
     fecha_hora       TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT ck_movimiento_tipo CHECK (tipo IN ('entrada', 'salida', 'ajuste')),
     CONSTRAINT ck_movimiento_cantidad CHECK (cantidad > 0)
@@ -207,7 +206,7 @@ CREATE TABLE detalle_pedido (
     precio_unitario   NUMERIC(12,2) NOT NULL,
     subtotal          NUMERIC(14,2) GENERATED ALWAYS AS
                       (cantidad * precio_unitario) STORED,
-    notas             VARCHAR(250),
+    notas             VARCHAR(40),
     CONSTRAINT ck_detalle_pedido_cantidad CHECK (cantidad > 0),
     CONSTRAINT ck_detalle_pedido_precio CHECK (precio_unitario >= 0)
 );
@@ -218,7 +217,7 @@ CREATE TABLE detalle_venta (
                      ON UPDATE CASCADE ON DELETE CASCADE,
     id_detalle_pedido BIGINT NOT NULL UNIQUE REFERENCES detalle_pedido(id_detalle_pedido)
                       ON UPDATE CASCADE ON DELETE RESTRICT,
-    nombre_producto  VARCHAR(120) NOT NULL,
+    nombre_producto  VARCHAR(40) NOT NULL,
     cantidad         INTEGER NOT NULL,
     precio_unitario  NUMERIC(12,2) NOT NULL,
     subtotal         NUMERIC(14,2) GENERATED ALWAYS AS
@@ -233,7 +232,7 @@ CREATE TABLE detalle_pago (
                     ON UPDATE CASCADE ON DELETE CASCADE,
     metodo          VARCHAR(20) NOT NULL,
     monto           NUMERIC(14,2) NOT NULL,
-    referencia      VARCHAR(120),
+    referencia      VARCHAR(40),
     CONSTRAINT ck_detalle_pago_metodo
         CHECK (metodo IN ('efectivo', 'tarjeta', 'transferencia', 'otro')),
     CONSTRAINT ck_detalle_pago_monto CHECK (monto > 0)
@@ -248,7 +247,7 @@ CREATE TABLE movimiento_caja (
     id_detalle_pago    BIGINT REFERENCES detalle_pago(id_detalle_pago)
                        ON UPDATE CASCADE ON DELETE RESTRICT,
     tipo               VARCHAR(12) NOT NULL,
-    concepto           VARCHAR(250) NOT NULL,
+    concepto           VARCHAR(40) NOT NULL,
     monto              NUMERIC(14,2) NOT NULL,
     fecha_hora         TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT ck_movimiento_caja_tipo CHECK (tipo IN ('ingreso', 'egreso')),
@@ -256,12 +255,13 @@ CREATE TABLE movimiento_caja (
 );
 
 -- ============================================================
--- TABLAS DE RESPALDO / AUDITORÍA
+-- TABLAS DE RESPALDO / AUDITORÍA (TODAS LAS 18 TABLAS)
 -- Se conserva la fila anterior en formato JSONB.
 -- Cada respaldo tiene su propio ID, por lo que se pueden guardar
 -- múltiples cambios del mismo registro sin conflictos de PK.
 -- ============================================================
 
+-- --- Tablas de respaldo existentes ---
 CREATE TABLE usuario_backup (
     id_respaldo BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     operacion VARCHAR(10) NOT NULL CHECK (operacion IN ('UPDATE', 'DELETE')),
@@ -311,12 +311,90 @@ CREATE TABLE pago_backup (
     datos JSONB NOT NULL
 );
 
+CREATE TABLE rol_backup (
+    id_respaldo BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    operacion VARCHAR(10) NOT NULL CHECK (operacion IN ('UPDATE', 'DELETE')),
+    fecha_respaldo TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    datos JSONB NOT NULL
+);
+
+CREATE TABLE empleado_backup (
+    id_respaldo BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    operacion VARCHAR(10) NOT NULL CHECK (operacion IN ('UPDATE', 'DELETE')),
+    fecha_respaldo TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    datos JSONB NOT NULL
+);
+
+CREATE TABLE categoria_backup (
+    id_respaldo BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    operacion VARCHAR(10) NOT NULL CHECK (operacion IN ('UPDATE', 'DELETE')),
+    fecha_respaldo TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    datos JSONB NOT NULL
+);
+
+CREATE TABLE insumo_backup (
+    id_respaldo BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    operacion VARCHAR(10) NOT NULL CHECK (operacion IN ('UPDATE', 'DELETE')),
+    fecha_respaldo TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    datos JSONB NOT NULL
+);
+
+CREATE TABLE caja_backup (
+    id_respaldo BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    operacion VARCHAR(10) NOT NULL CHECK (operacion IN ('UPDATE', 'DELETE')),
+    fecha_respaldo TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    datos JSONB NOT NULL
+);
+
+-- --- Nuevas tablas de respaldo (entidades débiles faltantes) ---
+CREATE TABLE detalle_insumo_producto_backup (
+    id_respaldo BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    operacion VARCHAR(10) NOT NULL CHECK (operacion IN ('UPDATE', 'DELETE')),
+    fecha_respaldo TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    datos JSONB NOT NULL
+);
+
+CREATE TABLE movimiento_inventario_backup (
+    id_respaldo BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    operacion VARCHAR(10) NOT NULL CHECK (operacion IN ('UPDATE', 'DELETE')),
+    fecha_respaldo TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    datos JSONB NOT NULL
+);
+
+CREATE TABLE detalle_pedido_backup (
+    id_respaldo BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    operacion VARCHAR(10) NOT NULL CHECK (operacion IN ('UPDATE', 'DELETE')),
+    fecha_respaldo TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    datos JSONB NOT NULL
+);
+
+CREATE TABLE detalle_venta_backup (
+    id_respaldo BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    operacion VARCHAR(10) NOT NULL CHECK (operacion IN ('UPDATE', 'DELETE')),
+    fecha_respaldo TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    datos JSONB NOT NULL
+);
+
+CREATE TABLE detalle_pago_backup (
+    id_respaldo BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    operacion VARCHAR(10) NOT NULL CHECK (operacion IN ('UPDATE', 'DELETE')),
+    fecha_respaldo TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    datos JSONB NOT NULL
+);
+
+CREATE TABLE movimiento_caja_backup (
+    id_respaldo BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    operacion VARCHAR(10) NOT NULL CHECK (operacion IN ('UPDATE', 'DELETE')),
+    fecha_respaldo TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    datos JSONB NOT NULL
+);
+
 
 -- ============================================================
 -- FUNCIÓN GENERAL DE RESPALDO
 -- AFTER UPDATE: guarda OLD (los datos antes de modificarlos).
 -- AFTER DELETE: guarda OLD (los datos antes de eliminarlos).
--- TG_TABLE_NAME permite reutilizar la función en varias tablas.
+-- TG_TABLE_NAME permite reutilizar la función en todas las tablas.
 -- ============================================================
 
 CREATE OR REPLACE FUNCTION fn_respaldo_fila()
@@ -331,12 +409,16 @@ BEGIN
     v_operacion := TG_OP;
 
     CASE TG_TABLE_NAME
-        WHEN 'usuario' THEN
-            INSERT INTO usuario_backup (operacion, datos)
+        WHEN 'rol' THEN
+            INSERT INTO rol_backup (operacion, datos)
             VALUES (v_operacion, v_datos);
 
-        WHEN 'producto' THEN
-            INSERT INTO producto_backup (operacion, datos)
+        WHEN 'empleado' THEN
+            INSERT INTO empleado_backup (operacion, datos)
+            VALUES (v_operacion, v_datos);
+
+        WHEN 'usuario' THEN
+            INSERT INTO usuario_backup (operacion, datos)
             VALUES (v_operacion, v_datos);
 
         WHEN 'cliente' THEN
@@ -345,6 +427,18 @@ BEGIN
 
         WHEN 'proveedor' THEN
             INSERT INTO proveedor_backup (operacion, datos)
+            VALUES (v_operacion, v_datos);
+
+        WHEN 'categoria' THEN
+            INSERT INTO categoria_backup (operacion, datos)
+            VALUES (v_operacion, v_datos);
+
+        WHEN 'producto' THEN
+            INSERT INTO producto_backup (operacion, datos)
+            VALUES (v_operacion, v_datos);
+
+        WHEN 'insumo' THEN
+            INSERT INTO insumo_backup (operacion, datos)
             VALUES (v_operacion, v_datos);
 
         WHEN 'pedido' THEN
@@ -359,6 +453,34 @@ BEGIN
             INSERT INTO pago_backup (operacion, datos)
             VALUES (v_operacion, v_datos);
 
+        WHEN 'caja' THEN
+            INSERT INTO caja_backup (operacion, datos)
+            VALUES (v_operacion, v_datos);
+
+        WHEN 'detalle_insumo_producto' THEN
+            INSERT INTO detalle_insumo_producto_backup (operacion, datos)
+            VALUES (v_operacion, v_datos);
+
+        WHEN 'movimiento_inventario' THEN
+            INSERT INTO movimiento_inventario_backup (operacion, datos)
+            VALUES (v_operacion, v_datos);
+
+        WHEN 'detalle_pedido' THEN
+            INSERT INTO detalle_pedido_backup (operacion, datos)
+            VALUES (v_operacion, v_datos);
+
+        WHEN 'detalle_venta' THEN
+            INSERT INTO detalle_venta_backup (operacion, datos)
+            VALUES (v_operacion, v_datos);
+
+        WHEN 'detalle_pago' THEN
+            INSERT INTO detalle_pago_backup (operacion, datos)
+            VALUES (v_operacion, v_datos);
+
+        WHEN 'movimiento_caja' THEN
+            INSERT INTO movimiento_caja_backup (operacion, datos)
+            VALUES (v_operacion, v_datos);
+
         ELSE
             RAISE EXCEPTION 'No existe tabla de respaldo para %', TG_TABLE_NAME;
     END CASE;
@@ -371,9 +493,10 @@ $$;
 
 
 -- ============================================================
--- TRIGGERS: RESPALDAN TANTO UPDATE COMO DELETE
+-- TRIGGERS: RESPALDAN TANTO UPDATE COMO DELETE EN LAS 18 TABLAS
 -- ============================================================
 
+-- --- Triggers existentes ---
 CREATE TRIGGER trg_backup_usuario
 AFTER UPDATE OR DELETE ON usuario
 FOR EACH ROW
@@ -409,5 +532,57 @@ AFTER UPDATE OR DELETE ON pago
 FOR EACH ROW
 EXECUTE FUNCTION fn_respaldo_fila();
 
+CREATE TRIGGER trg_backup_rol
+AFTER UPDATE OR DELETE ON rol
+FOR EACH ROW
+EXECUTE FUNCTION fn_respaldo_fila();
 
+CREATE TRIGGER trg_backup_empleado
+AFTER UPDATE OR DELETE ON empleado
+FOR EACH ROW
+EXECUTE FUNCTION fn_respaldo_fila();
 
+CREATE TRIGGER trg_backup_categoria
+AFTER UPDATE OR DELETE ON categoria
+FOR EACH ROW
+EXECUTE FUNCTION fn_respaldo_fila();
+
+CREATE TRIGGER trg_backup_insumo
+AFTER UPDATE OR DELETE ON insumo
+FOR EACH ROW
+EXECUTE FUNCTION fn_respaldo_fila();
+
+CREATE TRIGGER trg_backup_caja
+AFTER UPDATE OR DELETE ON caja
+FOR EACH ROW
+EXECUTE FUNCTION fn_respaldo_fila();
+
+CREATE TRIGGER trg_backup_detalle_insumo_producto
+AFTER UPDATE OR DELETE ON detalle_insumo_producto
+FOR EACH ROW
+EXECUTE FUNCTION fn_respaldo_fila();
+
+CREATE TRIGGER trg_backup_movimiento_inventario
+AFTER UPDATE OR DELETE ON movimiento_inventario
+FOR EACH ROW
+EXECUTE FUNCTION fn_respaldo_fila();
+
+CREATE TRIGGER trg_backup_detalle_pedido
+AFTER UPDATE OR DELETE ON detalle_pedido
+FOR EACH ROW
+EXECUTE FUNCTION fn_respaldo_fila();
+
+CREATE TRIGGER trg_backup_detalle_venta
+AFTER UPDATE OR DELETE ON detalle_venta
+FOR EACH ROW
+EXECUTE FUNCTION fn_respaldo_fila();
+
+CREATE TRIGGER trg_backup_detalle_pago
+AFTER UPDATE OR DELETE ON detalle_pago
+FOR EACH ROW
+EXECUTE FUNCTION fn_respaldo_fila();
+
+CREATE TRIGGER trg_backup_movimiento_caja
+AFTER UPDATE OR DELETE ON movimiento_caja
+FOR EACH ROW
+EXECUTE FUNCTION fn_respaldo_fila();

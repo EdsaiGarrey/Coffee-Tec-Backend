@@ -31,18 +31,50 @@ public class ProductoServlet extends HttpServlet {
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     // GET: listar productos
-    @Override
-    protected void doGet(HttpServletRequest request,
-                         HttpServletResponse response) throws IOException {
-        prepararJson(response);
-        try {
-            response.setStatus(HttpServletResponse.SC_OK);
-            objectMapper.writeValue(response.getWriter(), dao.listar());
-        } catch (SQLException e) {
-            getServletContext().log("Error al consultar productos", e);
-            enviarError(response, 500, "No se pudieron consultar los productos");
+   
+@Override
+protected void doGet(HttpServletRequest request,
+                     HttpServletResponse response) throws IOException {
+    prepararJson(response);
+
+    try {
+        String ruta = request.getPathInfo();
+
+        if (ruta == null || "/".equals(ruta)) {
+            // Mostrar todos los productos
+            response.setStatus(200);
+            objectMapper.writeValue(
+                    response.getWriter(), dao.listar());
+        } else {
+            // Buscar un producto por ID
+            Long id = leerId(request);
+
+            if (id == null) {
+                enviarError(response, 400, "ID invalido");
+                return;
+            }
+
+            Producto producto = dao.buscarPorId(id);
+
+            if (producto == null) {
+                enviarError(response, 404,
+                        "Producto no encontrado");
+                return;
+            }
+
+            response.setStatus(200);
+            objectMapper.writeValue(
+                    response.getWriter(), producto);
         }
+
+    } catch (SQLException e) {
+        getServletContext().log(
+                "Error al consultar productos", e);
+        enviarError(response, 500,
+                "No se pudieron consultar los productos");
     }
+}
+
 
     // POST: registrar producto
     @Override

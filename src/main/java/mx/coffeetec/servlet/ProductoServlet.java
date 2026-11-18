@@ -3,7 +3,8 @@ package mx.coffeetec.servlet;
 
 // Clases de nuestro proyecto Coffee Tec
 import mx.coffeetec.conexion.ConexionDB;
-import mx.coffeetec.mvc.Producto;
+import mx.coffeetec.pojo.Producto;
+import mx.coffeetec.dao.ProductoDAO;
 
 // Librerias para trabajar con JSON
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -48,102 +49,45 @@ public class ProductoServlet extends HttpServlet {
     // 1. GET - CONSULTAR PRODUCTOS
     // =====================================================
 
-    @Override
-    protected void doGet(HttpServletRequest request,
-                         HttpServletResponse response)
-            throws IOException {
+    
+@Override
+protected void doGet(
+        HttpServletRequest request,
+        HttpServletResponse response)
+        throws IOException {
 
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+    response.setContentType("application/json");
+    response.setCharacterEncoding("UTF-8");
 
-        // Consulta SQL adaptada a nuestra base coffee_tec
-        String sql =
-                "SELECT id_producto, id_categoria, nombre, "
-              + "descripcion, precio, url_imagen, "
-              + "stock, activo, fecha_creacion "
-              + "FROM producto "
-              + "ORDER BY id_producto";
+    try {
 
-        List<Producto> listaProductos = new ArrayList<>();
+        ProductoDAO dao = new ProductoDAO();
 
-        try (Connection conn = ConexionDB.getConexion();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        List<Producto> productos = dao.listar();
 
-            // Recorrer los registros obtenidos
-            while (rs.next()) {
+        response.setStatus(
+                HttpServletResponse.SC_OK
+        );
 
-                Producto producto = new Producto();
+        objectMapper.writeValue(
+                response.getWriter(),
+                productos
+        );
 
-                producto.setIdProducto(
-                        rs.getLong("id_producto")
-                );
+    } catch (SQLException e) {
 
-                producto.setIdCategoria(
-                        rs.getLong("id_categoria")
-                );
+        getServletContext().log(
+                "Error al consultar productos", e
+        );
 
-                producto.setNombre(
-                        rs.getString("nombre")
-                );
-
-                producto.setDescripcion(
-                        rs.getString("descripcion")
-                );
-
-                producto.setPrecio(
-                        rs.getBigDecimal("precio")
-                );
-
-                producto.setUrlImagen(
-                        rs.getString("url_imagen")
-                );
-
-                producto.setStock(
-                        rs.getInt("stock")
-                );
-
-                producto.setActivo(
-                        rs.getBoolean("activo")
-                );
-
-                producto.setFechaCreacion(
-                        rs.getObject(
-                            "fecha_creacion",
-                            OffsetDateTime.class
-                        )
-                );
-
-                listaProductos.add(producto);
-            }
-
-            // Respuesta HTTP 200 - OK
-            response.setStatus(
-                    HttpServletResponse.SC_OK
-            );
-
-            // Convertir lista de productos a JSON
-            objectMapper.writeValue(
-                    response.getWriter(),
-                    listaProductos
-            );
-
-        } catch (SQLException e) {
-
-            getServletContext().log(
-                    "Error al consultar productos", e
-            );
-
-
-
-            enviarError(
-                    response,
-                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "No se pudieron consultar los productos"
-
-            );
-        }
+        enviarError(
+                response,
+                HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                "No se pudieron consultar los productos"
+        );
     }
+}
+
 
     // =====================================================
     // 2. POST - REGISTRAR UN PRODUCTO

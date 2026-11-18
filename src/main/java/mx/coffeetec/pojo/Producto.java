@@ -1,4 +1,4 @@
-package mx.coffeetec.mvc;
+package mx.coffeetec.pojo;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;

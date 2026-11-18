@@ -35,6 +35,23 @@ public class ProductoDAO {
         }
         return productos;
     }
+    
+/** GET: buscar un producto por su ID */
+public Producto buscarPorId(long id) throws SQLException {
+    String sql = "SELECT " + COLUMNAS
+            + " FROM producto WHERE id_producto = ?";
+
+    try (Connection conn = ConexionDB.getConexion();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setLong(1, id);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            return rs.next() ? mapearProducto(rs) : null;
+        }
+    }
+}
+
 
     /** POST /api/productos */
     public Producto insertar(Producto producto) throws SQLException {

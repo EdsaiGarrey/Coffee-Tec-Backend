@@ -1,34 +1,88 @@
 
 package mx.coffeetec.conexion;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 public final class ConexionDB {
 
-    private static final String JNDI_NAME = "jdbc/CoffeeTecDB";
+    private static volatile HikariDataSource pool;
 
     private ConexionDB() {
-        // Evita crear objetos de esta clase utilitaria.
     }
 
-    public static Connection getConexion() throws SQLException {
-        try {
-            InitialContext context = new InitialContext();
+    private static String obtenerVariable(String nombre) {
+        String valor = System.getenv(nombre);
 
-            DataSource dataSource =
-                    (DataSource) context.lookup(JNDI_NAME);
-
-            return dataSource.getConnection();
-
-        } catch (NamingException e) {
-            throw new SQLException(
-                    "No se pudo encontrar el recurso JDBC: "
-                    + JNDI_NAME, e
+        if (valor == null || valor.trim().isEmpty()) {
+            throw new IllegalStateException(
+                "Falta configurar la variable: " + nombre
             );
+        }
+
+        return valor;
+    }
+
+    private static HikariDataSource obtenerPool() {
+
+        if (pool == null) {
+            synchronized (ConexionDB.class) {
+
+                if (pool == null) {
+                    HikariConfig config = new HikariConfig();
+
+                    config.setPoolName("CoffeeTecHikari");
+
+                    config.setJdbcUrl(
+                        obtenerVariable("COFFEETEC_DB_URL")
+                    );
+
+                    config.setUsername(
+                        obtenerVariable("COFFEETEC_DB_USER")
+                    );
+
+                    config.setPassword(
+                        obtenerVariable("COFFEETEC_DB_PASSWORD")
+                    );
+
+                    // Configuracion del pool
+                    config.setMaximumPoolSize(5);
+                    config.setMinimumIdle(1);
+                    config.setConnectionTimeout(10000);
+                    config.setIdleTimeout(600000);
+                    config.setMaxLifetime(1800000);
+
+                    pool = new HikariDataSource(config);
+                }
+            }
+        }
+
+        return pool;
+    }
+
+    
+
+public static Connection getConexion()
+        throws SQLException {
+
+    try {
+        return obtenerPool().getConnection();
+
+    } catch (RuntimeException e) {
+        throw new SQLException(
+            "Error al obtener conexion con HikariCP", e
+        );
+    }
+}
+
+
+
+    public static synchronized void cerrarPool() {
+        if (pool != null) {
+            pool.close();
+            pool = null;
         }
     }
 }

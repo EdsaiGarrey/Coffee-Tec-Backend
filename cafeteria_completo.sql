@@ -14,7 +14,7 @@ CREATE TABLE rol (
 CREATE TABLE empleado (
     id_empleado     BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     nombre          VARCHAR(40) NOT NULL,
-    telefono        VARCHAR(15),
+    telefono        TEXT,
     puesto          VARCHAR(40) NOT NULL DEFAULT 'Empleado',
     fecha_ingreso   DATE NOT NULL DEFAULT CURRENT_DATE,
     activo          BOOLEAN NOT NULL DEFAULT TRUE
@@ -42,7 +42,7 @@ CREATE TABLE usuario (
 CREATE TABLE cliente (
     id_cliente      BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     nombre          VARCHAR(40) NOT NULL,
-    telefono        VARCHAR(25),
+    telefono        TEXT,
     correo          VARCHAR(40),
     fecha_registro  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     activo          BOOLEAN NOT NULL DEFAULT TRUE,
@@ -53,8 +53,8 @@ CREATE TABLE cliente (
 CREATE TABLE proveedor (
     id_proveedor    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     nombre          VARCHAR(40) NOT NULL,
-    direccion       VARCHAR(90),
-    telefono        VARCHAR(25),
+    direccion       TEXT,
+    telefono        TEXT,
     correo          VARCHAR(40),
     activo          BOOLEAN NOT NULL DEFAULT TRUE,
     CONSTRAINT ck_proveedor_correo

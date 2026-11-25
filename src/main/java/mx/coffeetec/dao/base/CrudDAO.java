@@ -124,6 +124,12 @@ public abstract class CrudDAO<T> {
                 } else {
                     valor = rs.getObject(c.sql);
                 }
+valor = CifradoCampos.descifrarSiNecesario(
+    tabla,
+    c.propiedad,
+    valor
+);
+
                 pd.getWriteMethod().invoke(objeto, valor);
             }
             return objeto;
@@ -184,7 +190,18 @@ public abstract class CrudDAO<T> {
         }
         try (Connection cn = ConexionDB.getConexion();
              PreparedStatement ps = cn.prepareStatement(sql)) {
-            List<Object> valores = incluidas.stream().map(c -> cambios.get(c.propiedad)).collect(Collectors.toList());
+List<Object> valores = new ArrayList<>();
+
+for (Columna c : incluidas) {
+    valores.add(
+        CifradoCampos.cifrarSiNecesario(
+            tabla,
+            c.propiedad,
+            cambios.get(c.propiedad)
+        )
+    );
+}
+
             parametros(ps, valores, 1);
             try (ResultSet rs = ps.executeQuery()) {
                 if (!rs.next()) throw new SQLException("INSERT no devolvio registro");
@@ -204,7 +221,16 @@ public abstract class CrudDAO<T> {
         String sql = "UPDATE " + tabla + " SET " + set + " WHERE " + condicionPk() + " RETURNING *";
         try (Connection cn = ConexionDB.getConexion();
              PreparedStatement ps = cn.prepareStatement(sql)) {
-            List<Object> valores = incluidas.stream().map(c -> cambios.get(c.propiedad)).collect(Collectors.toList());
+List<Object> valores = new ArrayList<>();
+for (Columna c : incluidas) {
+    valores.add(
+        CifradoCampos.cifrarSiNecesario(
+            tabla,
+            c.propiedad,
+            cambios.get(c.propiedad)
+        )
+    );
+}
             parametros(ps, valores, 1);
             for (int i = 0; i < ids.length; i++) ps.setLong(valores.size() + i + 1, ids[i]);
             try (ResultSet rs = ps.executeQuery()) { return rs.next() ? mapear(rs) : null; }
@@ -220,6 +246,7 @@ public abstract class CrudDAO<T> {
             try (ResultSet rs = ps.executeQuery()) { return rs.next() ? mapear(rs) : null; }
         }
     }
+
 
     private void comprobarClaves(long[] ids) {
         if (ids == null || ids.length != claves.size()) {

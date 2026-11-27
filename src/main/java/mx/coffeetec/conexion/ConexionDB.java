@@ -34,6 +34,7 @@ public final class ConexionDB {
                     HikariConfig config = new HikariConfig();
 
                     config.setPoolName("CoffeeTecHikari");
+                    config.setDriverClassName("org.postgresql.Driver");
 
                     config.setJdbcUrl(
                         obtenerVariable("COFFEETEC_DB_URL")

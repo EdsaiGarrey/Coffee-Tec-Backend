@@ -67,12 +67,16 @@ protected void doGet(HttpServletRequest request,
                     response.getWriter(), producto);
         }
 
-    } catch (SQLException e) {
-        getServletContext().log(
-                "Error al consultar productos", e);
-        enviarError(response, 500,
-                "No se pudieron consultar los productos");
-    }
+    
+} catch (SQLException e) {
+    System.err.println("ERROR PRODUCTOS - SQLState: "
+            + e.getSQLState());
+    e.printStackTrace(System.err);
+
+    enviarError(response, 500,
+            "No se pudieron consultar los productos");
+}
+
 }
 
 
